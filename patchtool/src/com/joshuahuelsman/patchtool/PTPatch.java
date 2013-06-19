@@ -23,7 +23,7 @@ public class PTPatch {
 	public final static byte[] magic = { (byte) 0xff, 0x50, 0x54, 0x50 };
 	public final static byte[] op_codes = { (byte) 0xaa, (byte) 0xdd, (byte) 0xee };
 	private byte[] patch_array;
-	private int count;
+	public int count;
 	private String location;
 	public String name;
 	Header mHeader;
@@ -166,6 +166,25 @@ public class PTPatch {
 		OutputStream os = new FileOutputStream(f);
 		os.write(buf.array());
 		os.close();
+	}
+	
+	public byte[] getMetaData() {
+		count = 0;
+		int firstIndex = getCurrentIndex();
+		int metaDataStart = (mHeader.num_patches * 4) + 6;
+		byte[] retval = new byte[firstIndex - metaDataStart];
+		System.arraycopy(patch_array, metaDataStart, retval, 0, retval.length);
+		return retval;
+	}
+
+	public String getDescription() {
+		try {
+			byte[] metaData = getMetaData();
+			return new String(metaData, "UTF-8");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ""; //should this return null? feel free to yell at me if it should
+		}
 	}
 	
 	public static final byte[] intToByteArray(int value) {
